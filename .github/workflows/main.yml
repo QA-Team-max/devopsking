@@ -1,0 +1,30 @@
+name: Deploy to Salesforce
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Salesforce CLI
+        uses: salesforcecli/action@v2
+
+      - name: Auth to Salesforce using username & password
+        run: |
+          sf org login web \
+            --username ${{ secrets.SF_USERNAME }} \
+            --password ${{ secrets.SF_PASSWORD }} \
+            --instance-url ${{ secrets.SF_ORG_URL }} \
+            --set-default \
+            --alias targetOrg
+
+      - name: Deploy source to Salesforce
+        run: |
+          sf project deploy start --source-dir force-app --target-org targetOrg --wait 10 --ignore-conflicts
